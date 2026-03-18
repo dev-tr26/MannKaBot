@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — MannKaBot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #fdf6ec;
+      --blush: #f2c4b0;
+      --rose: #e8856a;
+      --deep: #2d1f3d;
+      --plum: #6b3f6e;
+      --mint: #a8d8b9;
+      --gold: #d4a84b;
+      --card-bg: rgba(255,255,255,0.75);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--deep); min-height: 100vh; }
+
+    /* Background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 600px 400px at 10% 20%, rgba(242,196,176,0.2) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 400px at 90% 80%, rgba(168,216,185,0.15) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 240px;
+      background: var(--deep);
+      padding: 32px 20px;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      margin-bottom: 40px;
+      display: block;
+      padding: 0 8px;
+    }
+    .sidebar-logo span { color: var(--blush); }
+    .nav-section-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      padding: 0 8px;
+      margin-bottom: 8px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,0.12); color: #fff; }
+    .nav-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+    .sidebar-spacer { flex: 1; }
+    .user-card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--blush);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .user-info .user-name { color: #fff; font-size: 0.85rem; font-weight: 500; }
+    .user-info .user-email { color: rgba(255,255,255,0.4); font-size: 0.72rem; }
+    .logout-btn {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 4px;
+      transition: color 0.2s;
+      margin-left: auto;
+    }
+    .logout-btn:hover { color: #fff; }
+
+    /* MAIN */
+    .main {
+      margin-left: 240px;
+      padding: 40px 40px 80px;
+      position: relative;
+      z-index: 1;
+    }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+    }
+    .greeting h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; }
+    .greeting p { opacity: 0.55; font-size: 0.9rem; margin-top: 4px; }
+    .top-date {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.8);
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 20px;
+      padding: 24px;
+      transition: transform 0.3s;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-icon { font-size: 1.8rem; margin-bottom: 12px; }
+    .stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+    .stat-label { font-size: 0.8rem; opacity: 0.5; font-weight: 500; }
+    .stat-card.accent { background: var(--deep); border-color: var(--deep); }
+    .stat-card.accent .stat-value, .stat-card.accent .stat-label { color: #fff; }
+    .stat-card.accent .stat-icon { filter: none; }
+
+    /* RECORDER CARD */
+    .recorder-section { margin-bottom: 32px; }
+    .recorder-card {
+      background: linear-gradient(135deg, var(--deep) 0%, var(--plum) 100%);
+      border-radius: 24px;
+      padding: 40px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .recorder-card::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      top: -100px; right: -80px;
+    }
+    .recorder-card::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.03);
+      bottom: -60px; left: 60px;
+    }
+    .recorder-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px; position: relative; z-index: 2; }
+    .recorder-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 6px; }
+    .recorder-sub { opacity: 0.6; font-size: 0.85rem; }
+    .lang-select {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #fff;
+      padding: 8px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .lang-select option { background: var(--deep); }
+
+    .recorder-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      position: relative;
+      z-index: 2;
+    }
+    .record-btn {
+      width: 88px; height: 88px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 3px solid rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .record-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.05); }
+    .record-btn.recording {
+      background: rgba(232, 133, 106, 0.3);
+      border-color: var(--rose);
+      animation: rec-pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes rec-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(232, 133, 106, 0.4); }
+      50% { box-shadow: 0 0 0 20px rgba(232, 133, 106, 0); }
+    }
+    .record-icon { font-size: 2rem; }
+    .rec-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--rose);
+      position: absolute;
+      top: 8px; right: 8px;
+      display: none;
+      animation: blink 1s ease-in-out infinite;
+    }
+    .recording .rec-dot { display: block; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .rec-timer { font-family: 'Playfair Display', serif; font-size: 1.6rem; letter-spacing: 0.05em; }
+    .rec-status { font-size: 0.85rem; opacity: 0.6; }
+
+    /* Waveform */
+    .rec-waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 48px;
+      min-width: 200px;
+    }
+    .rwb {
+      width: 3px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 2px;
+      height: 4px;
+      transition: height 0.1s;
+    }
+    .rec-controls { display: flex; gap: 14px; }
+    .btn-rec-action {
+      padding: 10px 24px;
+      border-radius: 40px;
+      border: none;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-stop { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+    .btn-stop:hover { background: rgba(255,255,255,0.25); }
+    .btn-submit { background: #fff; color: var(--deep); }
+    .btn-submit:hover { background: var(--blush); transform: translateY(-2px); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Transcript preview */
+    .transcript-preview {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 18px 20px;
+      width: 100%;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      opacity: 0.85;
+      min-height: 60px;
+      display: none;
+    }
+
+    /* AI Response */
+    .ai-response-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 20px;
+      padding: 24px;
+      margin-top: 20px;
+      display: none;
+    }
+    .ai-response-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .ai-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--rose), var(--plum));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .ai-label-small { font-size: 0.8rem; font-weight: 600; }
+    .ai-sub-label { font-size: 0.72rem; opacity: 0.5; }
+    .ai-text { font-size: 0.9rem; line-height: 1.7; margin-bottom: 16px; }
+    .mood-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .play-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--deep);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+      float: right;
+    }
+    .play-btn:hover { background: var(--plum); transform: translateY(-2px); }
+
+    /* RECENT ENTRIES */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; }
+    .see-all { color: var(--rose); text-decoration: none; font-size: 0.85rem; font-weight: 500; }
+    .entries-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+    .entry-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 18px;
+      padding: 22px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .entry-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(45,31,61,0.1); }
+    .entry-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .entry-mood { font-size: 1.6rem; }
+    .entry-date { font-size: 0.72rem; opacity: 0.45; }
+    .entry-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; margin-bottom: 8px; line-height: 1.3; }
+    .entry-preview { font-size: 0.8rem; opacity: 0.55; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .entry-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+    .entry-mood-badge {
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 24px;
+      opacity: 0.45;
+    }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.9rem; line-height: 1.6; }
+
+    /* Loading */
+    .loading { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; opacity: 0.6; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(45,31,61,0.1); border-top-color: var(--rose); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--deep);
+      color: #fff;
+      padding: 14px 22px;
+      border-radius: 14px;
+      font-size: 0.875rem;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.4s ease;
+      z-index: 999;
+      box-shadow: 0 8px 24px rgba(45,31,61,0.25);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; padding: 24px 16px 60px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="/dashboard" class="sidebar-logo">Mann<span>Ka</span>Bot</a>
+    <div class="nav-section-label">Navigation</div>
+    <a href="/dashboard" class="nav-item active"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a href="/journal" class="nav-item"><span class="nav-icon">📔</span> My Journal</a>
+    <a href="/insights" class="nav-item"><span class="nav-icon">📊</span> Insights</a>
+    <div class="sidebar-spacer"></div>
+    <div class="user-card">
+      <img src="" alt="User" class="user-avatar" id="userAvatar" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22><rect fill=%22%23f2c4b0%22 width=%2236%22 height=%2236%22/><text y=%2224%22 x=%2210%22 font-size=%2218%22>👤</text></svg>'" />
+      <div class="user-info">
+        <div class="user-name" id="userName">Loading...</div>
+        <div class="user-email" id="userEmail">...</div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="top-bar">
+      <div class="greeting">
+        <h1 id="greetingText">Good morning 🌸</h1>
+        <p id="greetingDate">Loading...</p>
+      </div>
+      <div class="top-date" id="topDate">—</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div class="stat-value" id="statEntries">—</div>
+        <div class="stat-label">Total Entries</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-value" id="statStreak">—</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">😊</div>
+        <div class="stat-value" id="statMood">—</div>
+        <div class="stat-label">Positive Days %</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🌟</div>
+        <div class="stat-value" id="statAvgMood">—</div>
+        <div class="stat-label">Avg Mood Score</div>
+      </div>
+    </div>
+
+    <!-- Voice Recorder -->
+    <section class="recorder-section">
+      <div class="recorder-card">
+        <div class="recorder-header">
+          <div>
+            <div class="recorder-title">Record Today's Entry</div>
+            <div class="recorder-sub">Press record and speak your heart out 🎙️</div>
+          </div>
+          <select class="lang-select" id="langSelect">
+            <option value="hi-IN">🇮🇳 Hindi</option>
+            <option value="en-IN">🇬🇧 English</option>
+            <option value="bn-IN">Bengali</option>
+            <option value="ta-IN">Tamil</option>
+            <option value="te-IN">Telugu</option>
+            <option value="mr-IN">Marathi</option>
+            <option value="gu-IN">Gujarati</option>
+            <option value="kn-IN">Kannada</option>
+            <option value="ml-IN">Malayalam</option>
+            <option value="pa-IN">Punjabi</option>
+          </select>
+        </div>
+        <div class="recorder-main">
+          <button class="record-btn" id="recordBtn" onclick="toggleRecord()">
+            <span class="record-icon" id="recordIcon">🎤</span>
+            <div class="rec-dot"></div>
+          </button>
+          <div class="rec-timer" id="recTimer">0:00</div>
+          <div class="rec-status" id="recStatus">Tap to start recording</div>
+          <div class="rec-waveform" id="recWaveform"></div>
+          <div class="rec-controls" id="recControls" style="display:none">
+            <button class="btn-rec-action btn-stop" onclick="stopRecording()">⏹ Stop</button>
+            <button class="btn-rec-action btn-submit" id="submitBtn" onclick="submitEntry()" disabled>✨ Analyse & Save</button>
+          </div>
+          <div class="transcript-preview" id="transcriptPreview"></div>
+          <div id="processingIndicator" style="display:none" class="loading">
+            <div class="spinner"></div>
+            Analysing your mood with Sarvam AI...
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-response-card" id="aiResponseCard">
+        <div class="ai-response-header">
+          <div class="ai-avatar">✨</div>
+          <div>
+            <div class="ai-label-small">MannKaBot</div>
+            <div class="ai-sub-label">AI Response</div>
+          </div>
+          <button class="play-btn" id="playBtn" onclick="playAIResponse()" style="margin-left:auto">
+            ▶ Play Response
+          </button>
+        </div>
+        <span class="mood-badge" id="moodBadge" style="margin-bottom:12px;display:inline-flex">—</span>
+        <div class="ai-text" id="aiText">—</div>
+        <div>
+          <div style="font-size:0.78rem;font-weight:600;opacity:0.5;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Suggestions for you</div>
+          <div id="suggestionsList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Entries -->
+    <div class="section-header">
+      <div class="section-title">Recent Entries</div>
+      <a href="/journal" class="see-all">See all →</a>
+    </div>
+    <div class="entries-grid" id="entriesGrid">
+      <div style="grid-column:1/-1;padding:40px 0;text-align:center;opacity:0.5">
+        <div class="spinner" style="margin:0 auto 10px"></div>
+        <div style="font-size:0.85rem">Loading entries...</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <audio id="aiAudio" style="display:none"></audio>
+
+  <script>
+    const API = '';
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordingInterval = null;
+    let recordingSeconds = 0;
+    let isRecording = false;
+    let audioBlob = null;
+    let aiAudioB64 = '';
+    let waveInterval = null;
+
+    // Auth check
+    const token = localStorage.getItem('mannkabot_token');
+    const urlToken = new URLSearchParams(window.location.search).get('token');
+    
+    if (urlToken) {
+      localStorage.setItem('mannkabot_token', urlToken);
+      window.history.replaceState({}, '', '/dashboard');
+    }
+    
+    if (!localStorage.getItem('mannkabot_token')) {
+      window.location.href = '/login';
+    }
+
+    function authHeaders() {
+      return { 'Authorization': `Bearer ${localStorage.getItem('mannkabot_token')}`, 'Content-Type': 'application/json' };
+    }
+
+    function showToast(msg, duration = 3000) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    // Setup greeting
+    function setupGreeting() {
+      const now = new Date();
+      const hour = now.getHours();
+      let greeting = hour < 12 ? 'Good morning 🌸' : hour < 17 ? 'Good afternoon ☀️' : 'Good evening 🌙';
+      document.getElementById('greetingDate').textContent = 'How are you feeling today?';
+      document.getElementById('greetingText').textContent = greeting;
+      const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('topDate').textContent = dateStr;
+    }
+
+    // Load user
+    async function loadUser() {
+      try {
+        const res = await fetch('/auth/me', { headers: authHeaders() });
+        if (res.status === 401) { logout(); return; }
+        const user = await res.json();
+        document.getElementById('userName').textContent = user.name.split(' ')[0];
+        document.getElementById('userEmail').textContent = user.email;
+        if (user.picture) document.getElementById('userAvatar').src = user.picture;
+        document.getElementById('greetingText').textContent = 
+          (new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening') + `, ${user.name.split(' ')[0]} 👋`;
+      } catch(e) { console.error(e); }
+    }
+
+    // Load insights
+    async function loadInsights() {
+      try {
+        const res = await fetch('/api/journal/insights', { headers: authHeaders() });
+        const data = await res.json();
+        document.getElementById('statEntries').textContent = data.total_entries || 0;
+        document.getElementById('statStreak').textContent = (data.streak || 0) + ' 🔥';
+        document.getElementById('statMood').textContent = (data.positive_days_percentage || 0) + '%';
+        document.getElementById('statAvgMood').textContent = Math.round((data.average_mood_score || 0.5) * 10) + '/10';
+      } catch(e) { console.error(e); }
+    }
+
+    // Load recent entries
+    async function loadEntries() {
+      try {
+        const res = await fetch('/api/journal/?limit=6', { headers: authHeaders() });
+        const data = await res.json();
+        const grid = document.getElementById('entriesGrid');
+        
+        if (!data.entries || data.entries.length === 0) {
+          grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📔</div><p>No entries yet.<br>Record your first voice journal above!</p></div>`;
+          return;
+        }
+        
+        const moodEmojis = { very_happy:'🤩', happy:'😊', excited:'🚀', grateful:'🙏', neutral:'😐', tired:'😴', anxious:'😰', sad:'😢', very_sad:'💙', angry:'😤' };
+        const moodColors = { very_happy:'#fef3c7', happy:'#dcfce7', excited:'#dbeafe', grateful:'#f3e8ff', neutral:'#f1f5f9', tired:'#fce7f3', anxious:'#fef9c3', sad:'#e0f2fe', very_sad:'#ede9fe', angry:'#fee2e2' };
+        const moodTextColors = { very_happy:'#92400e', happy:'#166534', excited:'#1e40af', grateful:'#581c87', neutral:'#475569', tired:'#9d174d', anxious:'#713f12', sad:'#075985', very_sad:'#4c1d95', angry:'#991b1b' };
+
+        grid.innerHTML = data.entries.map(e => {
+          const mood = e.detected_mood || 'neutral';
+          const emoji = moodEmojis[mood] || '📝';
+          const date = new Date(e.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+          return `
+          <div class="entry-card" onclick="window.location='/journal'">
+            <div class="entry-top">
+              <div class="entry-mood">${emoji}</div>
+              <div class="entry-date">${date}</div>
+            </div>
+            <div class="entry-title">${e.title}</div>
+            <div class="entry-preview">${e.transcript}</div>
+            <div class="entry-footer">
+              <span class="entry-mood-badge" style="background:${moodColors[mood]};color:${moodTextColors[mood]}">${mood.replace('_',' ')}</span>
+              <span style="font-size:0.72rem;opacity:0.4">${Math.round((e.mood_score||0.5)*10)}/10</span>
+            </div>
+          </div>`;
+        }).join('');
+      } catch(e) { console.error(e); }
+    }
+
+    // Build waveform
+    function buildWaveform() {
+      const wf = document.getElementById('recWaveform');
+      wf.innerHTML = '';
+      for (let i = 0; i < 30; i++) {
+        const b = document.createElement('div');
+        b.className = 'rwb';
+        b.id = `rwb-${i}`;
+        wf.appendChild(b);
+      }
+    }
+
+    function animateWaveform() {
+      waveInterval = setInterval(() => {
+        for (let i = 0; i < 30; i++) {
+          const b = document.getElementById(`rwb-${i}`);
+          if (b) b.style.height = (Math.random() * 36 + 4) + 'px';
+        }
+      }, 100);
+    }
+
+    function stopWaveform() {
+      clearInterval(waveInterval);
+      for (let i = 0; i < 30; i++) {
+        const b = document.getElementById(`rwb-${i}`);
+        if (b) b.style.height = '4px';
+      }
+    }
+
+    async function toggleRecord() {
+      if (isRecording) return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          document.getElementById('submitBtn').disabled = false;
+          stream.getTracks().forEach(t => t.stop());
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        recordingSeconds = 0;
+        
+        const btn = document.getElementById('recordBtn');
+        btn.classList.add('recording');
+        document.getElementById('recordIcon').textContent = '🔴';
+        document.getElementById('recStatus').textContent = 'Recording... speak freely';
+        document.getElementById('recControls').style.display = 'flex';
+        
+        animateWaveform();
+        recordingInterval = setInterval(() => {
+          recordingSeconds++;
+          const m = Math.floor(recordingSeconds / 60);
+          const s = recordingSeconds % 60;
+          document.getElementById('recTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        }, 1000);
+        
+        showToast('🎙️ Recording started');
+      } catch(e) {
+        showToast('❌ Microphone access denied');
+      }
+    }
+
+    function stopRecording() {
+      if (!isRecording) return;
+      mediaRecorder.stop();
+      isRecording = false;
+      clearInterval(recordingInterval);
+      stopWaveform();
+      
+      const btn = document.getElementById('recordBtn');
+      btn.classList.remove('recording');
+      document.getElementById('recordIcon').textContent = '🎤';
+      document.getElementById('recStatus').textContent = 'Recording saved. Ready to analyse!';
+      showToast('⏹ Recording stopped');
+    }
+
+    async function submitEntry() {
+      if (!audioBlob) return;
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      document.getElementById('processingIndicator').style.display = 'flex';
+      document.getElementById('aiResponseCard').style.display = 'none';
+      
+      try {
+        const lang = document.getElementById('langSelect').value;
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.wav');
+        formData.append('language_code', lang);
+        
+        // Step 1: Transcribe
+        const sttRes = await fetch('/api/sarvam/transcribe', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('mannkabot_token')}` },
+          body: formData
+        });
+        
+        if (!sttRes.ok) throw new Error('Transcription failed');
+        const sttData = await sttRes.json();
+        
+        const transcript = sttData.transcript;
+        document.getElementById('transcriptPreview').textContent = `"${transcript}"`;
+        document.getElementById('transcriptPreview').style.display = 'block';
+        
+        // Step 2: Save journal entry (mood analysis happens server-side)
+        const saveRes = await fetch('/api/journal/', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            transcript,
+            translated_text: sttData.translated_text,
+            audio_language: lang,
+            audio_duration: recordingSeconds
+          })
+        });
+        
+        if (!saveRes.ok) throw new Error('Save failed');
+        const entry = await saveRes.json();
+        
+        // Show AI response
+        showAIResponse(entry);
+        loadEntries();
+        loadInsights();
+        
+        // Reset
+        audioBlob = null;
+        recordingSeconds = 0;
+        document.getElementById('recTimer').textContent = '0:00';
+        document.getElementById('recStatus').textContent = 'Tap to start recording';
+        document.getElementById('recControls').style.display = 'none';
+        
+        showToast('✨ Journal entry saved!');
+      } catch(err) {
+        showToast('❌ ' + (err.message || 'Something went wrong'));
+        submitBtn.disabled = false;
+      } finally {
+        document.getElementById('processingIndicator').style.display = 'none';
+      }
+    }
+
+    function showAIResponse(entry) {
+      const moodEmojis = { very_happy:'🤩', happy:'😊', excited:'🚀', grateful:'🙏', neutral:'😐', tired:'😴', anxious:'😰', sad:'😢', very_sad:'💙', angry:'😤' };
+      const moodColors = { very_happy:'#fef3c7', happy:'#dcfce7', excited:'#dbeafe', grateful:'#f3e8ff', neutral:'#f1f5f9', tired:'#fce7f3', anxious:'#fef9c3', sad:'#e0f2fe', very_sad:'#ede9fe', angry:'#fee2e2' };
+      const moodTextColors = { very_happy:'#92400e', happy:'#166534', excited:'#1e40af', grateful:'#581c87', neutral:'#475569', tired:'#9d174d', anxious:'#713f12', sad:'#075985', very_sad:'#4c1d95', angry:'#991b1b' };
+
+      const mood = entry.detected_mood || 'neutral';
+      const badge = document.getElementById('moodBadge');
+      badge.textContent = `${moodEmojis[mood] || '😐'} ${mood.replace('_', ' ')}`;
+      badge.style.background = moodColors[mood] || '#f1f5f9';
+      badge.style.color = moodTextColors[mood] || '#475569';
+      
+      document.getElementById('aiText').textContent = entry.ai_response || '';
+      
+      const suggList = document.getElementById('suggestionsList');
+      if (entry.suggestions && entry.suggestions.length) {
+        suggList.innerHTML = entry.suggestions.map(s => 
+          `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(45,31,61,0.06);font-size:0.82rem;opacity:0.75">
+            <span style="color:var(--rose);flex-shrink:0">→</span>${s}
+          </div>`
+        ).join('');
+      }
+      
+      if (entry.ai_response_audio) {
+        aiAudioB64 = entry.ai_response_audio;
+        document.getElementById('playBtn').style.display = 'flex';
+      } else {
+        document.getElementById('playBtn').style.display = 'none';
+      }
+      
+      document.getElementById('aiResponseCard').style.display = 'block';
+    }
+
+    function playAIResponse() {
+      if (!aiAudioB64) return;
+      const audio = document.getElementById('aiAudio');
+      audio.src = `data:audio/wav;base64,${aiAudioB64}`;
+      audio.play();
+      const btn = document.getElementById('playBtn');
+      btn.textContent = '🔊 Playing...';
+      audio.onended = () => { btn.innerHTML = '▶ Play Response'; };
+    }
+
+    function logout() {
+      localStorage.removeItem('mannkabot_token');
+      window.location.href = '/login';
+    }
+
+    // Initialize
+    setupGreeting();
+    buildWaveform();
+    loadUser();
+    loadInsights();
+    loadEntries();
+  </script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Journal — MannKaBot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #fdf6ec; --blush: #f2c4b0; --rose: #e8856a;
+      --deep: #2d1f3d; --plum: #6b3f6e; --mint: #a8d8b9;
+      --gold: #d4a84b; --card-bg: rgba(255,255,255,0.78);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--deep); min-height:100vh; }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background: radial-gradient(ellipse 600px 400px at 10% 20%,rgba(242,196,176,0.18) 0%,transparent 70%),
+                  radial-gradient(ellipse 400px 400px at 90% 80%,rgba(168,216,185,0.12) 0%,transparent 70%);
+      pointer-events:none; z-index:0;
+    }
+
+    /* Sidebar */
+    .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:var(--deep); padding:32px 20px; display:flex; flex-direction:column; z-index:100; }
+    .sidebar-logo { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:#fff; text-decoration:none; margin-bottom:40px; display:block; padding:0 8px; }
+    .sidebar-logo span { color:var(--blush); }
+    .nav-section-label { font-size:0.65rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.3); padding:0 8px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:12px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:0.9rem; font-weight:500; transition:all 0.2s; margin-bottom:4px; }
+    .nav-item:hover { background:rgba(255,255,255,0.08); color:#fff; }
+    .nav-item.active { background:rgba(255,255,255,0.12); color:#fff; }
+    .nav-icon { font-size:1.1rem; width:22px; text-align:center; }
+    .sidebar-spacer { flex:1; }
+    .user-card { background:rgba(255,255,255,0.08); border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px; }
+    .user-avatar { width:36px; height:36px; border-radius:50%; background:var(--blush); object-fit:cover; flex-shrink:0; }
+    .user-name { color:#fff; font-size:0.85rem; font-weight:500; }
+    .user-email { color:rgba(255,255,255,0.4); font-size:0.72rem; }
+    .logout-btn { background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer; font-size:0.8rem; padding:4px; transition:color 0.2s; margin-left:auto; }
+    .logout-btn:hover { color:#fff; }
+
+    /* Main */
+    .main { margin-left:240px; padding:40px 40px 80px; position:relative; z-index:1; }
+    .page-header { margin-bottom:32px; }
+    .page-header h1 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:6px; }
+    .page-header p { opacity:0.55; font-size:0.9rem; }
+
+    /* Search & Filter Bar */
+    .filter-bar {
+      display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+      margin-bottom:28px;
+    }
+    .search-wrap {
+      flex:1; min-width:200px; position:relative;
+    }
+    .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); opacity:0.4; font-size:1rem; }
+    .search-input {
+      width:100%; padding:12px 16px 12px 42px;
+      background:var(--card-bg); border:1px solid rgba(255,255,255,0.8);
+      backdrop-filter:blur(10px); border-radius:14px;
+      font-family:'DM Sans',sans-serif; font-size:0.9rem;
+      color:var(--deep); outline:none; transition:border-color 0.2s;
+    }
+    .search-input:focus { border-color:rgba(45,31,61,0.3); }
+    .search-input::placeholder { opacity:0.45; }
+    .mood-filters { display:flex; gap:8px; flex-wrap:wrap; }
+    .mood-filter-btn {
+      padding:8px 16px; border-radius:40px; border:1.5px solid rgba(45,31,61,0.12);
+      background:var(--card-bg); font-size:0.8rem; font-weight:500;
+      cursor:pointer; transition:all 0.2s; backdrop-filter:blur(10px);
+      font-family:'DM Sans',sans-serif; color:var(--deep);
+    }
+    .mood-filter-btn:hover { border-color:var(--rose); }
+    .mood-filter-btn.active { background:var(--deep); color:#fff; border-color:var(--deep); }
+
+    /* Entries */
+    .entries-container { display:flex; flex-direction:column; gap:16px; }
+    .entry-item {
+      background:var(--card-bg); backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.8); border-radius:20px;
+      overflow:hidden; transition:all 0.3s; cursor:pointer;
+    }
+    .entry-item:hover { transform:translateX(4px); box-shadow:0 8px 24px rgba(45,31,61,0.08); }
+    .entry-item-header {
+      display:flex; align-items:center; gap:16px; padding:22px 24px;
+    }
+    .entry-mood-big { font-size:2.2rem; flex-shrink:0; }
+    .entry-meta { flex:1; min-width:0; }
+    .entry-item-title { font-family:'Playfair Display',serif; font-size:1rem; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .entry-item-preview { font-size:0.82rem; opacity:0.55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .entry-item-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
+    .entry-item-date { font-size:0.72rem; opacity:0.4; }
+    .mood-pill { padding:4px 12px; border-radius:20px; font-size:0.72rem; font-weight:600; }
+
+    /* Expanded entry detail */
+    .entry-detail {
+      padding:0 24px 24px; border-top:1px solid rgba(45,31,61,0.06);
+      display:none;
+    }
+    .entry-detail.open { display:block; }
+    .detail-transcript {
+      background:rgba(45,31,61,0.04); border-radius:14px;
+      padding:16px; font-size:0.88rem; line-height:1.7;
+      margin-bottom:16px; margin-top:16px;
+      color:var(--deep); opacity:0.8;
+    }
+    .detail-ai {
+      background:linear-gradient(135deg,rgba(232,133,106,0.08),rgba(168,216,185,0.1));
+      border:1px solid rgba(232,133,106,0.15); border-radius:14px; padding:16px;
+      margin-bottom:14px;
+    }
+    .detail-ai-label { font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; opacity:0.5; margin-bottom:8px; }
+    .detail-ai-text { font-size:0.88rem; line-height:1.7; }
+    .detail-suggestions { margin-top:12px; }
+    .suggestion-item { display:flex; gap:8px; padding:6px 0; font-size:0.82rem; opacity:0.7; border-bottom:1px solid rgba(45,31,61,0.05); }
+    .detail-footer { display:flex; align-items:center; justify-content:space-between; margin-top:16px; }
+    .score-bar-wrap { flex:1; max-width:200px; }
+    .score-label { font-size:0.7rem; opacity:0.45; margin-bottom:5px; }
+    .score-track { height:5px; background:rgba(45,31,61,0.08); border-radius:10px; overflow:hidden; }
+    .score-fill { height:100%; background:linear-gradient(90deg,var(--rose),var(--gold)); border-radius:10px; }
+    .delete-btn {
+      background:none; border:1.5px solid rgba(232,133,106,0.3);
+      color:var(--rose); padding:8px 18px; border-radius:40px; cursor:pointer;
+      font-size:0.78rem; font-family:'DM Sans',sans-serif; transition:all 0.2s;
+    }
+    .delete-btn:hover { background:rgba(232,133,106,0.1); }
+    .play-mini-btn {
+      background:var(--deep); color:#fff; border:none; padding:8px 16px;
+      border-radius:40px; cursor:pointer; font-size:0.78rem;
+      font-family:'DM Sans',sans-serif; transition:all 0.2s; margin-right:8px;
+    }
+    .play-mini-btn:hover { background:var(--plum); }
+
+    /* Pagination */
+    .pagination { display:flex; gap:8px; justify-content:center; margin-top:32px; }
+    .page-btn {
+      width:38px; height:38px; border-radius:50%; border:1.5px solid rgba(45,31,61,0.12);
+      background:var(--card-bg); backdrop-filter:blur(10px); cursor:pointer;
+      font-size:0.85rem; transition:all 0.2s; font-family:'DM Sans',sans-serif; color:var(--deep);
+    }
+    .page-btn:hover, .page-btn.active { background:var(--deep); color:#fff; border-color:var(--deep); }
+
+    .empty-state { text-align:center; padding:80px 24px; opacity:0.45; }
+    .empty-state .e-icon { font-size:3.5rem; margin-bottom:16px; }
+    .empty-state h3 { font-family:'Playfair Display',serif; font-size:1.3rem; margin-bottom:8px; }
+    .empty-state p { font-size:0.88rem; line-height:1.6; }
+    .empty-state a { color:var(--rose); text-decoration:none; }
+
+    .spinner { display:inline-block; width:20px; height:20px; border:2px solid rgba(45,31,61,0.1); border-top-color:var(--rose); border-radius:50%; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-state { padding:60px 24px; text-align:center; opacity:0.5; }
+
+    .toast { position:fixed; bottom:32px; right:32px; background:var(--deep); color:#fff; padding:14px 22px; border-radius:14px; font-size:0.875rem; transform:translateY(80px); opacity:0; transition:all 0.4s ease; z-index:999; box-shadow:0 8px 24px rgba(45,31,61,0.25); }
+    .toast.show { transform:translateY(0); opacity:1; }
+
+    @media(max-width:768px) { .sidebar{display:none;} .main{margin-left:0;padding:24px 16px 60px;} }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="/dashboard" class="sidebar-logo">Mann<span>Ka</span>Bot</a>
+  <div class="nav-section-label">Navigation</div>
+  <a href="/dashboard" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+  <a href="/journal" class="nav-item active"><span class="nav-icon">📔</span> My Journal</a>
+  <a href="/insights" class="nav-item"><span class="nav-icon">📊</span> Insights</a>
+  <div class="sidebar-spacer"></div>
+  <div class="user-card">
+    <img src="" alt="User" class="user-avatar" id="userAvatar" />
+    <div>
+      <div class="user-name" id="userName">...</div>
+      <div class="user-email" id="userEmail">...</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">⏻</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <h1>My Journal 📔</h1>
+    <p>All your voice journal entries, beautifully preserved</p>
+  </div>
+
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" placeholder="Search entries..." id="searchInput" oninput="debouncedSearch()" />
+    </div>
+    <div class="mood-filters">
+      <button class="mood-filter-btn active" data-mood="" onclick="filterByMood(this, '')">All</button>
+      <button class="mood-filter-btn" data-mood="happy" onclick="filterByMood(this, 'happy')">😊 Happy</button>
+      <button class="mood-filter-btn" data-mood="sad" onclick="filterByMood(this, 'sad')">😢 Sad</button>
+      <button class="mood-filter-btn" data-mood="anxious" onclick="filterByMood(this, 'anxious')">😰 Anxious</button>
+      <button class="mood-filter-btn" data-mood="grateful" onclick="filterByMood(this, 'grateful')">🙏 Grateful</button>
+      <button class="mood-filter-btn" data-mood="excited" onclick="filterByMood(this, 'excited')">🚀 Excited</button>
+    </div>
+  </div>
+
+  <div class="entries-container" id="entriesContainer">
+    <div class="loading-state"><div class="spinner"></div><br>Loading your journal...</div>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+<audio id="audioPlayer" style="display:none"></audio>
+
+<script>
+const token = localStorage.getItem('mannkabot_token');
+if (!token) window.location.href = '/login';
+
+function authH() { return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }; }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function logout() { localStorage.removeItem('mannkabot_token'); window.location.href = '/login'; }
+
+const moodEmojis = { very_happy:'🤩', happy:'😊', excited:'🚀', grateful:'🙏', neutral:'😐', tired:'😴', anxious:'😰', sad:'😢', very_sad:'💙', angry:'😤' };
+const moodColors = { very_happy:'#fef3c7', happy:'#dcfce7', excited:'#dbeafe', grateful:'#f3e8ff', neutral:'#f1f5f9', tired:'#fce7f3', anxious:'#fef9c3', sad:'#e0f2fe', very_sad:'#ede9fe', angry:'#fee2e2' };
+const moodText = { very_happy:'#92400e', happy:'#166534', excited:'#1e40af', grateful:'#581c87', neutral:'#475569', tired:'#9d174d', anxious:'#713f12', sad:'#075985', very_sad:'#4c1d95', angry:'#991b1b' };
+
+let currentPage = 1;
+let currentMood = '';
+let currentSearch = '';
+let searchTimer;
+
+async function loadUser() {
+  try {
+    const r = await fetch('/auth/me', { headers: authH() });
+    if (r.status === 401) { logout(); return; }
+    const u = await r.json();
+    document.getElementById('userName').textContent = u.name.split(' ')[0];
+    document.getElementById('userEmail').textContent = u.email;
+    if (u.picture) document.getElementById('userAvatar').src = u.picture;
+  } catch(e) {}
+}
+
+async function loadEntries() {
+  const container = document.getElementById('entriesContainer');
+  container.innerHTML = '<div class="loading-state"><div class="spinner"></div><br>Loading...</div>';
+  
+  const params = new URLSearchParams({ page: currentPage, limit: 8 });
+  if (currentMood) params.append('mood', currentMood);
+  if (currentSearch) params.append('search', currentSearch);
+  
+  try {
+    const r = await fetch(`/api/journal/?${params}`, { headers: authH() });
+    const data = await r.json();
+    
+    if (!data.entries || data.entries.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="e-icon">📔</div>
+          <h3>${currentSearch || currentMood ? 'No matching entries' : 'No entries yet'}</h3>
+          <p>${currentSearch || currentMood ? 'Try a different search or filter.' : 'Start recording your thoughts on the <a href="/dashboard">Dashboard</a>!'}</p>
+        </div>`;
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+    
+    container.innerHTML = data.entries.map(e => {
+      const mood = e.detected_mood || 'neutral';
+      const emoji = moodEmojis[mood] || '📝';
+      const date = new Date(e.created_at).toLocaleDateString('en-IN', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+      const score = Math.round((e.mood_score || 0.5) * 100);
+      const hasAudio = !!e.ai_response_audio;
+      
+      return `
+      <div class="entry-item" id="entry-${e.id}">
+        <div class="entry-item-header" onclick="toggleEntry('${e.id}')">
+          <div class="entry-mood-big">${emoji}</div>
+          <div class="entry-meta">
+            <div class="entry-item-title">${e.title}</div>
+            <div class="entry-item-preview">${e.transcript}</div>
+          </div>
+          <div class="entry-item-right">
+            <div class="entry-item-date">${date}</div>
+            <span class="mood-pill" style="background:${moodColors[mood]};color:${moodText[mood]}">${mood.replace('_',' ')}</span>
+          </div>
+        </div>
+        <div class="entry-detail" id="detail-${e.id}">
+          <div class="detail-transcript">"${e.transcript}"</div>
+          ${e.ai_response ? `
+          <div class="detail-ai">
+            <div class="detail-ai-label">✨ MannKaBot Response</div>
+            <div class="detail-ai-text">${e.ai_response}</div>
+          </div>` : ''}
+          ${e.suggestions && e.suggestions.length ? `
+          <div class="detail-suggestions">
+            <div style="font-size:0.72rem;font-weight:600;opacity:0.45;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Suggestions</div>
+            ${e.suggestions.map(s => `<div class="suggestion-item"><span style="color:var(--rose)">→</span>${s}</div>`).join('')}
+          </div>` : ''}
+          <div class="detail-footer">
+            <div class="score-bar-wrap">
+              <div class="score-label">Mood Score: ${score}/100</div>
+              <div class="score-track"><div class="score-fill" style="width:${score}%"></div></div>
+            </div>
+            <div>
+              ${hasAudio ? `<button class="play-mini-btn" onclick="playResponse('${e.id}','${e.ai_response_audio}')">▶ Play</button>` : ''}
+              <button class="delete-btn" onclick="deleteEntry('${e.id}', event)">🗑 Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    
+    // Pagination
+    renderPagination(data.page, data.pages);
+  } catch(err) {
+    container.innerHTML = '<div class="empty-state"><div class="e-icon">❌</div><p>Error loading entries. Please refresh.</p></div>';
+  }
+}
+
+function renderPagination(current, total) {
+  if (total <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = '';
+  if (current > 1) html += `<button class="page-btn" onclick="goPage(${current-1})">‹</button>`;
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || Math.abs(i - current) <= 1) {
+      html += `<button class="page-btn ${i===current?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    } else if (Math.abs(i - current) === 2) {
+      html += `<span style="padding:0 4px;opacity:0.4;font-size:0.8rem">...</span>`;
+    }
+  }
+  if (current < total) html += `<button class="page-btn" onclick="goPage(${current+1})">›</button>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(p) { currentPage = p; loadEntries(); window.scrollTo(0,0); }
+
+function toggleEntry(id) {
+  const d = document.getElementById(`detail-${id}`);
+  d.classList.toggle('open');
+}
+
+function filterByMood(btn, mood) {
+  document.querySelectorAll('.mood-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentMood = mood;
+  currentPage = 1;
+  loadEntries();
+}
+
+function debouncedSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentSearch = document.getElementById('searchInput').value;
+    currentPage = 1;
+    loadEntries();
+  }, 400);
+}
+
+async function deleteEntry(id, event) {
+  event.stopPropagation();
+  if (!confirm('Delete this journal entry? This cannot be undone.')) return;
+  try {
+    const r = await fetch(`/api/journal/${id}`, { method:'DELETE', headers: authH() });
+    if (r.ok) { showToast('🗑 Entry deleted'); loadEntries(); }
+  } catch(e) { showToast('❌ Delete failed'); }
+}
+
+function playResponse(entryId, audioB64) {
+  if (!audioB64) return;
+  const a = document.getElementById('audioPlayer');
+  a.src = `data:audio/wav;base64,${audioB64}`;
+  a.play();
+  showToast('🔊 Playing AI response...');
+}
+
+loadUser();
+loadEntries();
+</script>
+</body>
+</html>
