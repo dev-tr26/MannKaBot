@@ -1,4 +1,5 @@
-backend/
+backend/routes
+backend/auth_utils.py
 .env
 venv/
 env/
