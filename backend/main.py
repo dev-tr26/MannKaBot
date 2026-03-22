@@ -52,21 +52,27 @@ app.include_router(sarvam_router, prefix="/api/sarvam", tags=["Sarvam AI"])
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_page(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
+
 @app.get("/journal", response_class=HTMLResponse)
 async def journal_page(request: Request):
     return templates.TemplateResponse("journal.html", {"request": request})
 
+
 @app.get("/insights", response_class=HTMLResponse)
 async def insights_page(request: Request):
     return templates.TemplateResponse("insights.html", {"request": request})
+
+
 
 if __name__ == "__main__":
     import uvicorn
