@@ -1,22 +1,22 @@
-# 🎙️ MannKaBot — Voice AI Journal
+# MannKaBot — Voice AI Journal
 
-A beautiful, voice-powered AI journal that listens in Hindi (and other Indian languages), understands your emotions, and responds with compassionate AI support — powered by **Sarvam AI**.
-
----
-
-## ✨ Features
-
-- 🎤 **Voice Recording** — Record journal entries in Hindi, English, Tamil, Telugu, Bengali, Marathi & more
-- 🧠 **Mood Detection** — AI analyzes your emotional state from speech
-- 💬 **AI Responses** — Personalized, mood-aware replies in Hindi (with TTS audio)
-- 📊 **Insights Dashboard** — Charts, mood trends, streaks & wellness score
-- 🔐 **Google OAuth** — Secure sign-in with Gmail
-- 🗄️ **MongoDB** — All entries persisted per user
-- 🌐 **Multi-language** — 10 Indian languages via Sarvam AI
+A beautiful, voice-powered AI journal that listens in Hindi (and other Indian languages), understands your emotions, and responds with compassionate AI support — powered by **Sarvam AI models**.
 
 ---
 
-## 🏗️ Project Structure
+## Features
+
+-  **Voice Recording** — Record journal entries in Hindi, English, Tamil, Telugu, Bengali, Marathi & more
+-  **Mood Detection** — AI analyzes your emotional state from speech
+-  **AI Responses** — Personalized, mood-aware replies in Hindi (with TTS audio)
+-  **Insights Dashboard** — Charts, mood trends, streaks & wellness score
+-  **Google OAuth** — Secure sign-in with Gmail
+-  **MongoDB** — All entries persisted per user
+-  **Multi-language** — 10 Indian languages via Sarvam AI
+
+---
+
+##  Project Structure
 
 ```
 voice-journal/
@@ -44,7 +44,7 @@ voice-journal/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Clone & Setup
 
@@ -124,7 +124,7 @@ Open [http://localhost:8000](http://localhost:8000) 🎉
 
 ---
 
-## 📡 API Reference
+##  API Reference
 
 ### Authentication
 | Method | Endpoint | Description |
@@ -152,19 +152,19 @@ Open [http://localhost:8000](http://localhost:8000) 🎉
 
 ---
 
-## 🎨 Pages Overview
+##  Pages Overview
 
 | Page | Route | Description |
 |------|-------|-------------|
-| 🏠 Home | `/` | Landing page with features, how-it-works |
-| 🔐 Login | `/login` | Google OAuth sign-in |
-| 📊 Dashboard | `/dashboard` | Stats + voice recorder + recent entries |
-| 📔 Journal | `/journal` | All entries with search & mood filter |
-| 📈 Insights | `/insights` | Mood trends, charts, analytics |
+|  Home | `/` | Landing page with features, how-it-works |
+|  Login | `/login` | Google OAuth sign-in |
+|  Dashboard | `/dashboard` | Stats + voice recorder + recent entries |
+|  Journal | `/journal` | All entries with search & mood filter |
+|  Insights | `/insights` | Mood trends, charts, analytics |
 
 ---
 
-## 🔧 Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -178,7 +178,7 @@ Open [http://localhost:8000](http://localhost:8000) 🎉
 
 ---
 
-## 🌐 Supported Languages (Sarvam AI)
+##  Supported Languages (Sarvam AI)
 
 - 🇮🇳 Hindi (`hi-IN`)
 - 🇬🇧 English (`en-IN`)
@@ -193,7 +193,7 @@ Open [http://localhost:8000](http://localhost:8000) 🎉
 
 ---
 
-## 💡 Demo Mode
+##  Demo Mode
 
 If `SARVAM_API_KEY` is not set, the app runs in **Demo Mode**:
 - Voice transcription returns a placeholder message
@@ -203,7 +203,7 @@ If `SARVAM_API_KEY` is not set, the app runs in **Demo Mode**:
 
 ---
 
-## 🔒 Security Notes
+##  Security Notes
 
 - JWT tokens stored in `localStorage` (7-day expiry)
 - All API endpoints require Bearer token authentication
@@ -212,10 +212,9 @@ If `SARVAM_API_KEY` is not set, the app runs in **Demo Mode**:
 
 ---
 
-## 📝 License
+##  License
 
 MIT License — Built for educational/personal use.
 
 ---
 
-*Built with ❤️ for the Indian developer community*
