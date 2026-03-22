@@ -124,7 +124,7 @@ Open [http://localhost:8000](http://localhost:8000) 🎉
 
 ---
 
-## 📡 API Reference
+##  API Reference
 
 ### Authentication
 | Method | Endpoint | Description |
@@ -218,4 +218,3 @@ MIT License — Built for educational/personal use.
 
 ---
 
-*Built with ❤️ for the Indian developer community*
