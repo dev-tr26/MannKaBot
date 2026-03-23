@@ -29,7 +29,7 @@ async def create_entry(
         raise HTTPException(status_code=400, detail="Transcript is required")
     
 
-    mood_analysis = analyze_mood_from_text(transcript)
+    mood_analysis = await analyze_mood_from_text(transcript)
     
     ai_audio = await sarvam_tts(
         mood_analysis["ai_response"],

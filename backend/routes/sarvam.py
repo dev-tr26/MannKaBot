@@ -31,7 +31,7 @@ async def sarvam_stt(audio_bytes: bytes, language_code: str = "hi-IN", filename:
             "language_code": language_code
         }
     
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
         files = {"file": (filename, audio_bytes, "audio/wav")}
         data = {
             "language_code": language_code,
@@ -64,7 +64,7 @@ async def sarvam_translate(text: str, source_lang: str, target_lang: str = "en-I
     if not SARVAM_API_KEY:
         return text  
     
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
         response = await client.post(
             f"{SARVAM_BASE}/translate",
             headers={**SARVAM_HEADERS, "Content-Type": "application/json"},
@@ -91,7 +91,7 @@ async def sarvam_tts(text: str, language_code: str = "hi-IN", speaker: str = "me
         return ""  
     
     # 500 char LIMIT 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
         response = await client.post(
             f"{SARVAM_BASE}/text-to-speech",
             headers={**SARVAM_HEADERS, "Content-Type": "application/json"},
@@ -115,7 +115,69 @@ async def sarvam_tts(text: str, language_code: str = "hi-IN", speaker: str = "me
         return ""
 
 
-def analyze_mood_from_text(text: str) -> dict:
+
+async def analyze_mood_from_text(text: str) -> dict:
+    
+    system_prompt = """You are MannKaBot, a warm and empathetic AI journal companion. 
+A user has shared a voice journal entry with you.
+
+Your job is to:
+1. Detect their mood from the text
+2. Give a personalized, compassionate response in Hinglish (mix of Hindi and English)
+
+Respond ONLY in this exact JSON format, nothing else:
+{
+  "mood": "<one of: very_happy, happy, excited, grateful, neutral, tired, anxious, sad, very_sad, angry>",
+  "score": <float between 0.0 and 1.0>,
+  "ai_response": "<your warm, personalized Hinglish response referencing what they actually said>",
+  "suggestions": ["suggestion 1", "suggestion 2", "suggestion 3"]
+}"""
+
+    # Call Sarvam LLM if API key exists
+    if SARVAM_API_KEY:
+        try:
+            async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
+                response = await client.post(
+                    f"{SARVAM_BASE}/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {SARVAM_API_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "sarvam-m",
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": f"Journal entry: {text}"}
+                        ],
+                        "temperature": 0.7,
+                        "max_tokens": 1024
+                    }
+                )
+
+                if response.status_code == 200:
+                    raw = response.text
+                    print("Sarvam LLM raw response:", raw)
+                    
+                    content = response.json()["choices"][0]["message"]["content"]
+                    if "<think>" in content and "</think>" in content:
+                        content = content.split("</think>")[-1].strip()
+        
+                    content = content.replace("```json", "").replace("```", "").strip()
+                    result = json.loads(content)
+                    result["emotions"] = [result["mood"].replace("_", " ").title()]
+                    result["summary"] = f"Your entry reflects a {result['mood'].replace('_', ' ')} state of mind."
+                    return result
+                    
+                    
+        except Exception as e:
+            print(f"Sarvam LLM error: {e}, falling back to keyword analysis")
+
+    return _keyword_mood_analysis(text)
+
+
+
+
+def _keyword_mood_analysis(text: str) -> dict:
 
     text_lower = text.lower()
     
