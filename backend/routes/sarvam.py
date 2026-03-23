@@ -85,9 +85,12 @@ async def sarvam_translate(text: str, source_lang: str, target_lang: str = "en-I
 
 
 
-async def sarvam_tts(text: str, language_code: str = "hi-IN", speaker: str = "meera") -> str:
-
+async def sarvam_tts(text: str, language_code: str = "hi-IN", speaker: str = "anushka") -> str:
+    print("TTS called with:", text[:50])
+    print("TTS API key exists:", bool(SARVAM_API_KEY))
+    
     if not SARVAM_API_KEY:
+        print("TTS: no API key, returning empty")
         return ""  
     
     # 500 char LIMIT 
@@ -104,13 +107,17 @@ async def sarvam_tts(text: str, language_code: str = "hi-IN", speaker: str = "me
                 "loudness": 1.5,
                 "speech_sample_rate": 22050,
                 "enable_preprocessing": True,
-                "model": "bulbul:v1"
+                "model": "bulbul:v2"
             }
         )
-        
+        print("TTS status:", response.status_code)  
+        print("TTS response:", response.text[:200])  
         if response.status_code == 200:
             audios = response.json().get("audios", [])
+            print("TTS audio count:", len(audios))
             if audios:
+                print("TTS audio length:", len(audios[0]), "chars")
+                print("TTS audio preview:", audios[0][:50])
                 return audios[0]  
         return ""
 

@@ -34,7 +34,7 @@ async def create_entry(
     ai_audio = await sarvam_tts(
         mood_analysis["ai_response"],
         language_code="hi-IN",
-        speaker="meera"
+        speaker="anushka"
     )
     
 

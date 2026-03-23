@@ -846,13 +846,33 @@
     }
 
     function playAIResponse() {
-      if (!aiAudioB64) return;
+      if (!aiAudioB64) {
+        showToast('No audio available');  
+        return;
+      }
       const audio = document.getElementById('aiAudio');
-      audio.src = `data:audio/wav;base64,${aiAudioB64}`;
-      audio.play();
-      const btn = document.getElementById('playBtn');
-      btn.textContent = '🔊 Playing...';
-      audio.onended = () => { btn.innerHTML = '▶ Play Response'; };
+
+      if(aiAudioB64.startswith('data:')){
+          audio.src = aiAudioB64;
+      }
+      else{
+          audio.src = `data:audio/wav;base64,${aiAudioB64}`;
+      }
+
+      audio.play()
+        .then(() => {
+            document.getElementById('playBtn').innerHTML = '🔊 Playing...';
+        })
+        .catch(e => {
+            console.error('Play error:', e);
+            // Try as mp3 if wav fails
+            audio.src = `data:audio/mpeg;base64,${aiAudioB64}`;
+            audio.play().catch(() => showToast('❌ Audio playback failed'));
+        });
+    
+      audio.onended = () => {
+          document.getElementById('playBtn').innerHTML = '▶ Play Response';
+      };
     }
 
     function logout() {
