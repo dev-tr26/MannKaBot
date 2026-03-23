@@ -100,8 +100,8 @@ async def google_callback(code: str = None, error: str = None):
             "name": google_user.get("name", ""),
             "picture": google_user.get("picture", ""),
             "google_id": google_user.get("sub", ""),
-            "created_at": datetime.now(timezone.UTC),
-            "last_login": datetime.now(timezone.UTC),
+            "created_at": datetime.now(timezone.utc),
+            "last_login": datetime.now(timezone.utc),
             "streak": 0,
             "last_entry_date": None,
             "total_entries": 0
