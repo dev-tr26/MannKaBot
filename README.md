@@ -1,6 +1,6 @@
 # MannKaBot — Voice AI Journal
 
-A beautiful, voice-powered AI journal that listens in Hindi (and other Indian languages), understands your emotions, and responds with compassionate AI support — powered by **Sarvam AI models**.
+A beautiful, voice-powered AI journal that listens in Hindi (and other Indian languages), understands your emotions, and responds with compassionate AI support — powered by **Multilingual AI models**.
 
 ---
 
@@ -12,35 +12,8 @@ A beautiful, voice-powered AI journal that listens in Hindi (and other Indian la
 -  **Insights Dashboard** — Charts, mood trends, streaks & wellness score
 -  **Google OAuth** — Secure sign-in with Gmail
 -  **MongoDB** — All entries persisted per user
--  **Multi-language** — 10 Indian languages via Sarvam AI
-
----
-
-##  Project Structure
-
-```
-voice-journal/
-├── backend/
-│   ├── main.py              # FastAPI app entry point
-│   ├── database.py          # MongoDB Motor connection
-│   ├── auth_utils.py        # JWT authentication utilities
-│   ├── models.py            # Pydantic models
-│   └── routes/
-│       ├── auth.py          # Google OAuth routes
-│       ├── journal.py       # Journal CRUD API
-│       └── sarvam.py        # Sarvam AI (STT, TTS, Translation)
-├── frontend/
-│   ├── templates/
-│   │   ├── index.html       # Landing/Home page
-│   │   ├── login.html       # Google Sign-In page
-│   │   ├── dashboard.html   # Main dashboard + voice recorder
-│   │   ├── journal.html     # Journal entries list
-│   │   └── insights.html    # Mood analytics & charts
-│   └── static/              # CSS, JS, assets
-├── requirements.txt
-├── .env.example
-└── setup.sh
-```
+-  **Multi-language** — supported 10 Indian languages conversation
+-  **Fast-api** — Backend
 
 ---
 
