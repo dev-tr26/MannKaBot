@@ -404,6 +404,25 @@
       .main { margin-left: 0; padding: 24px 16px 60px; }
       .stats-row { grid-template-columns: repeat(2, 1fr); }
     }
+    .top-logout-btn {
+    background: rgba(232, 133, 106, 0.12);
+    border: 1.5px solid rgba(246, 34, 6, 0.3);
+    color: var(--rose);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: fit-content;
+  }
+    .top-logout-btn:hover {
+    background: rgba(232, 133, 106, 0.25);
+    border-color: var(--rose);
+    transform: translateY(-1px);
+  }
+
   </style>
 </head>
 <body>
@@ -430,12 +449,15 @@
   <main class="main">
     <div class="top-bar">
       <div class="greeting">
-        <h1 id="greetingText">Good morning 🌸</h1>
-        <p id="greetingDate">Loading...</p>
-      </div>
-      <div class="top-date" id="topDate">—</div>
+      <h1 id="greetingText">Good morning 🌸</h1>
+      <p id="greetingDate">Loading...</p>
     </div>
-
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+        <div class="top-date" id="topDate">—</div>
+        <button class="top-logout-btn" onclick="logout()">⏻ Logout</button>
+        </div>
+    </div>
+    
     <!-- Stats -->
     <div class="stats-row" id="statsRow">
       <div class="stat-card">
@@ -604,8 +626,8 @@
         const data = await res.json();
         document.getElementById('statEntries').textContent = data.total_entries || 0;
         document.getElementById('statStreak').textContent = (data.streak || 0) + ' 🔥';
-        document.getElementById('statMood').textContent = (data.positive_days_percentage || 0) + '%';
-        document.getElementById('statAvgMood').textContent = Math.round((data.average_mood_score || 0.5) * 10) + '/10';
+        document.getElementById('statMood').textContent = hasEntries ? (data.positive_days_percentage || 0) + '%'  : '—';
+        document.getElementById('statAvgMood').textContent =  hasEntries ? Math.round((data.average_mood_score || 0.5) * 10) + '/10' : '—' ;
       } catch(e) { console.error(e); }
     }
 

@@ -168,7 +168,7 @@ async def get_insights(
         {"$match": {"user_id": user_id, "mood_score": {"$exists": True}}},
         {"$group": {"_id": None, "avg_score": {"$avg": "$mood_score"}}}
     ]
-    avg_score = 0.5
+    avg_score = None
     async for doc in db.journal_entries.aggregate(avg_pipeline):
         avg_score = round(doc["avg_score"], 2)
     

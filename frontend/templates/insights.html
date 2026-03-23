@@ -213,22 +213,28 @@ async function loadInsights() {
     // Big metrics
     document.getElementById('mTotal').textContent = d.total_entries || 0;
     document.getElementById('mStreak').textContent = (d.streak || 0) + ' 🔥';
-    document.getElementById('mPos').textContent = (d.positive_days_percentage || 0) + '%';
-    document.getElementById('mAvg').textContent = Math.round((d.average_mood_score || 0.5) * 10) + '/10';
+    document.getElementById('mPos').textContent = hasEntries ? (d.positive_days_percentage || 0) + '%' : '—';
+    document.getElementById('mAvg').textContent = hasEntries ? Math.round((d.average_mood_score || 0.5) * 10) + '/10' : '—';
 
     // Insight cards
-    const topMood = d.most_common_mood || 'neutral';
-    document.getElementById('iMostMood').textContent = `${moodEmojis[topMood] || '😐'} ${topMood.replace('_',' ')}`;
+    const topMood = hasEntries ? (d.most_common_mood || 'neutral') : null;
+    document.getElementById('iMostMood').textContent = hasEntries ? `${moodEmojis[topMood] || '😐'} ${topMood.replace('_',' ')}`:  '—';
     const moodDescs = { very_happy:'You often feel very joyful!', happy:'You tend to be cheerful', excited:'You have a lot of enthusiasm', grateful:'Gratitude is your superpower', neutral:'You have balanced days', tired:'Rest might help you recharge', anxious:'Consider stress management', sad:'Be gentle with yourself', very_sad:'Remember: it gets better', angry:'Channel your energy wisely' };
     document.getElementById('iMostMoodDesc').textContent = moodDescs[topMood] || '';
 
     const weekly = d.weekly_entries || [];
     const weeklyTotal = weekly.reduce((s, w) => s + w.count, 0);
-    document.getElementById('iHabit').textContent = weeklyTotal + ' this week';
-    document.getElementById('iHabitDesc').textContent = weeklyTotal >= 5 ? '🌟 Amazing consistency!' : weeklyTotal >= 3 ? '👍 Good habit forming' : 'Try to journal daily';
+    document.getElementById('iHabit').textContent =  hasEntries ? weeklyTotal + ' this week' : '—';
+    document.getElementById('iHabitDesc').textContent = hasEntries 
+    ? (weeklyTotal >= 5 ? '🌟 Amazing consistency!' : weeklyTotal >= 3 ? '👍 Good habit forming' : 'Try to journal daily')
+    : 'No entries yet — start speaking!';
 
-    const wellness = Math.round(((d.average_mood_score || 0.5) * 60 + Math.min(d.streak || 0, 7) / 7 * 20 + (d.positive_days_percentage || 0) / 100 * 20));
-    document.getElementById('iWellness').textContent = wellness + '/100';
+    const hasEntries = d.total_entries > 0;
+    const avgMood = hasEntries ? (d.average_mood_score || 0) : 0;
+    const wellness = hasEntries 
+      ? Math.round(avgMood * 60 + Math.min(d.streak || 0, 7) / 7 * 20 + (d.positive_days_percentage || 0) / 100 * 20)
+      : 0;
+    document.getElementById('iWellness').textContent = hasEntries ? wellness + '/100' : '—';
 
     // Tags
     const tagsWrap = document.getElementById('tagsWrap');
