@@ -3,9 +3,11 @@ name: Test and Deploy MannKaBot
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:   # allows manual triggering
 
 jobs:
   test:
+    name: Run Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -36,9 +38,10 @@ jobs:
           python -m pytest tests/ -v --tb=short
 
   deploy:
+    name: Deploy to Render
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: ${{ success() }}   # ensures deploy only runs if tests pass
 
     steps:
       - name: Checkout code
