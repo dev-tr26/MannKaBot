@@ -20,9 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio 
-
-        working-directory: MannKaBot
+          pip install pytest pytest-asyncio
 
       - name: Run tests
         env:
@@ -36,7 +34,6 @@ jobs:
           GOOGLE_REDIRECT_URI: http://localhost:8000/auth/google/callback
         run: |
           python -m pytest tests/ -v --tb=short
-        working-directory: MannKaBot
 
   deploy:
     needs: test
@@ -47,10 +44,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
+      - name: Install Render CLI
+        run: npm install -g @render/cli
 
-      - name: Deploy to Railway
+      - name: Deploy to Render
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service mannkabot
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+        run: |
+          render deploy service $RENDER_SERVICE_ID
