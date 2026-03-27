@@ -202,6 +202,7 @@ async def get_insights(
         {"$sort": {"count": -1}},
         {"$limit": 10}
     ]
+    
     recent_tags = []
     async for doc in db.journal_entries.aggregate(tags_pipeline):
         recent_tags.append(doc["_id"])

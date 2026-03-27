@@ -785,7 +785,7 @@
             transcript,
             translated_text: sttData.translated_text,
             audio_language: lang,
-            audio_duration: recordingSeconds
+            audio_duration: recordingSeconds,
           })
         });
         
@@ -845,35 +845,65 @@
       document.getElementById('aiResponseCard').style.display = 'block';
     }
 
-    function playAIResponse() {
-      if (!aiAudioB64) {
-        showToast('No audio available');  
-        return;
-      }
-      const audio = document.getElementById('aiAudio');
+let isPlaying = false;
 
-      if(aiAudioB64.startswith('data:')){
-          audio.src = aiAudioB64;
-      }
-      else{
-          audio.src = `data:audio/wav;base64,${aiAudioB64}`;
-      }
+function playAIResponse(auto = false) {
+  const audio = document.getElementById('aiAudio');
+  const btn = document.getElementById('playBtn');
 
-      audio.play()
-        .then(() => {
-            document.getElementById('playBtn').innerHTML = '🔊 Playing...';
-        })
-        .catch(e => {
-            console.error('Play error:', e);
-            // Try as mp3 if wav fails
-            audio.src = `data:audio/mpeg;base64,${aiAudioB64}`;
-            audio.play().catch(() => showToast('❌ Audio playback failed'));
-        });
-    
-      audio.onended = () => {
-          document.getElementById('playBtn').innerHTML = '▶ Play Response';
-      };
+  if (!aiAudioB64) {
+    showToast('No audio available');
+    return;
+  }
+
+  
+  if (isPlaying && !auto) {
+    audio.pause();
+    audio.currentTime = 0;
+    isPlaying = false;
+    btn.innerHTML = '▶ Play Response';
+    return;
+  }
+
+  try {
+
+    // Set source only if not already set
+
+    if (!audio.src) {
+      if (aiAudioB64.startsWith('data:')) {
+        audio.src = aiAudioB64;
+      } else {
+        audio.src = `data:audio/wav;base64,${aiAudioB64}`;
+      }
     }
+
+    audio.play()
+      .then(() => {
+        isPlaying = true;
+        btn.innerHTML = '⏹ Stop';
+      })
+      .catch(() => {
+
+        // fallback to mp3
+
+        audio.src = `data:audio/mpeg;base64,${aiAudioB64}`;
+        return audio.play();
+      })
+      .catch(() => {
+        showToast('Audio playback failed');
+      });
+
+    audio.onended = () => {
+      isPlaying = false;
+      btn.innerHTML = '▶ Play Response';
+      audio.currentTime = 0;
+    };
+
+  } catch (e) {
+    console.error(e);
+    showToast(' Audio error');
+  }
+}
 
     function logout() {
       localStorage.removeItem('mannkabot_token');
