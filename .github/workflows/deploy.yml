@@ -1,0 +1,56 @@
+name: Test and Deploy MannKaBot
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio 
+
+        working-directory: MannKaBot
+
+      - name: Run tests
+        env:
+          JWT_SECRET: test-secret-key
+          JWT_ALGORITHM: HS256
+          SARVAM_API_KEY: ""
+          MONGODB_URL: mongodb://localhost:27017
+          DATABASE_NAME: voice_journal_test
+          GOOGLE_CLIENT_ID: fake-id
+          GOOGLE_CLIENT_SECRET: fake-secret
+          GOOGLE_REDIRECT_URI: http://localhost:8000/auth/google/callback
+        run: |
+          python -m pytest tests/ -v --tb=short
+        working-directory: MannKaBot
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service mannkabot
