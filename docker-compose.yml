@@ -1,0 +1,12 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    volumes:
+      - ./frontend:/frontend  # mounts frontend so templates work
+    restart: unless-stopped
